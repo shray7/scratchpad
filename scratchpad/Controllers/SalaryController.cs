@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web.Helpers;
 using System.Web.Http;
 using System.Web.Script.Serialization;
@@ -26,13 +27,14 @@ namespace scratchpad.Controllers
         {
             HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
 
+
             using (var wc = new WebClient())
             {
                 var result = wc.DownloadString(new Uri(ConstructUri(firstName, lastName, year, campus)));
                 doc.LoadHtml(result);
-            }
-            var test1 = doc.GetElementbyId("results").OuterHtml;
+            };
             var newdoc = new HtmlDocument();
+            var test1 = doc.GetElementbyId("results").OuterHtml;
             newdoc.LoadHtml(test1);
             var test2 = newdoc.DocumentNode.Descendants("td").Select(x => x.InnerText);
             var salaryList = new List<Salary>();
@@ -51,13 +53,5 @@ namespace scratchpad.Controllers
             }
             return salaryList;
         }
-        [HttpGet]
-        public string GetSalaryAsync(string firstName, string lastName, int year, int campus)
-        {
-            var jss = new JavaScriptSerializer();
-            return jss.Serialize(new { results = GetSalary(firstName, lastName, year, campus) });
-        }
-
-
     }
 }
