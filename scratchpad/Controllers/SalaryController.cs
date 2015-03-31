@@ -60,9 +60,7 @@ namespace scratchpad.Controllers
         [HttpGet]
         public SalaryByTitle GetSalaryByTitle(string titleSearch, int year, int campus)
         {
-
             HtmlDocument doc = new HtmlDocument();
-
 
             using (var wc = new WebClient())
             {
