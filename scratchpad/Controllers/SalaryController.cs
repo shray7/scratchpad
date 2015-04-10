@@ -40,12 +40,13 @@ namespace scratchpad.Controllers
             var newdoc = new HtmlDocument();
             var test1 = doc.GetElementbyId("results").OuterHtml;
             newdoc.LoadHtml(test1);
-            var test2 = newdoc.DocumentNode.Descendants("td").Select(x => x.InnerText);
+            var test2 = newdoc.DocumentNode.Descendants("td").Where(x => !x.InnerText.Contains("google")).Select(x=>x.InnerText);
             var salaryList = new List<Salary>();
             for (int i = 0; i < test2.Count() / 5; i++)
             {
                 var fiveItems = test2.Skip(i * 5).Take(5);
                 var salary = new Salary();
+
 
                 salary.Name = fiveItems.ElementAt(0);
                 salary.Title = fiveItems.ElementAt(1);
