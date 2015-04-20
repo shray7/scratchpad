@@ -10,7 +10,7 @@ namespace scratchpad.Models
         public string Name { get; set; }
         public string Title { get; set;}
         public string Department { get; set; }
-        public decimal FTR { get; set; }
-        public decimal GF { get; set; }
+        public string FTR { get; set; }
+        public string GF { get; set; }
     }
 }

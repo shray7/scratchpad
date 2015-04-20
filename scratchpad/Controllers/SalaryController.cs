@@ -51,8 +51,8 @@ namespace scratchpad.Controllers
                 salary.Name = fiveItems.ElementAt(0);
                 salary.Title = fiveItems.ElementAt(1);
                 salary.Department = fiveItems.ElementAt(2);
-                salary.FTR = decimal.Parse(fiveItems.ElementAt(3), NumberStyles.Currency);
-                salary.GF = decimal.Parse(fiveItems.ElementAt(4), NumberStyles.Currency);
+                salary.FTR = decimal.Parse(fiveItems.ElementAt(3), NumberStyles.Currency).ToString("#.##");
+                salary.GF = decimal.Parse(fiveItems.ElementAt(4), NumberStyles.Currency).ToString("#.##");
 
                 salaryList.Add(salary);
             }
@@ -82,11 +82,32 @@ namespace scratchpad.Controllers
                 };
             };
         }
+
+        [HttpGet]
+        public SalaryByTitle GetAvailableYear()
+        {
+            HtmlDocument doc = new HtmlDocument();
+
+            using (var wc = new WebClient())
+            {
+                var result = wc.DownloadString(new Uri(baseUrl));
+                doc.LoadHtml(result);
+                var htmlNode = doc.GetElementbyId("maincontent").OuterHtml;
+                var newdoc = new HtmlDocument();
+                newdoc.LoadHtml(htmlNode);
+                var statTable = newdoc.DocumentNode.Descendants("select").First().Descendants("option");
+                var list1 = statTable.Select(x => x.InnerHtml);
+                var optionValuelist = statTable.Select(x => x.OuterHtml);
+
+                return new SalaryByTitle
+                {                };
+            };
+        }
     }
 }
 
 
-//<option value='0'>2014-2015</option>
+//                                      <option value='0'>2014-2015</option>
 //                                      <option value='1'>2013-2014</option>
 //                                      <option value='2'>2012-2013</option>
 //                                      <option value='3'>2011-2012</option>
