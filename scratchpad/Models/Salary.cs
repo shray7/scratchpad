@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace scratchpad.Models
 {
     public class Salary
     {
+        [Key]
+        public int SalaryId { get; set; }
         public string Name { get; set; }
         public string Title { get; set;}
         public string Department { get; set; }

@@ -5,11 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Web.Helpers;
 using System.Web.Http;
-using System.Web.Script.Serialization;
 
 namespace scratchpad.Controllers
 {
@@ -30,7 +26,6 @@ namespace scratchpad.Controllers
         public IEnumerable<Salary> GetSalary(string firstName, string lastName, int year, int campus)
         {
             HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
-
 
             using (var wc = new WebClient())
             {
@@ -81,6 +76,17 @@ namespace scratchpad.Controllers
                     MaxSalary = statChildren.Descendants("td").Skip(3).First().InnerText
                 };
             };
+        }
+
+        [HttpGet]
+        public void test()
+        {
+            using (var db = new SalaryContext())
+            {
+                db.Delete(new Salary { SalaryId = 1 });
+                db.Delete(new Salary { SalaryId = 2 });
+                db.SaveChanges();
+            }
         }
 
         [HttpGet]
