@@ -11,8 +11,8 @@
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>scratchpad</RootNamespace>
-    <AssemblyName>scratchpad</AssemblyName>
+    <RootNamespace>WebApi</RootNamespace>
+    <AssemblyName>WebAPi</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
     <UseIISExpress>true</UseIISExpress>
@@ -170,14 +170,19 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\DepartmentController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\SalaryController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\AvailableCampus.cs" />
+    <Compile Include="Models\AvailableYears.cs" />
+    <Compile Include="Models\Context\SalaryByTitleContext.cs" />
+    <Compile Include="Models\Department.cs" />
     <Compile Include="Models\Salary.cs" />
     <Compile Include="Models\SalaryByTitle.cs" />
-    <Compile Include="Models\SalaryContext.cs" />
+    <Compile Include="Models\Context\SalaryContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>

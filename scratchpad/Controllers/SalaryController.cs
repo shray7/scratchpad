@@ -25,7 +25,7 @@ namespace scratchpad.Controllers
         [HttpGet]
         public IEnumerable<Salary> GetSalary(string firstName, string lastName, int year, int campus)
         {
-            HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
+            HtmlDocument doc = new HtmlDocument();
 
             using (var wc = new WebClient())
             {
@@ -40,14 +40,15 @@ namespace scratchpad.Controllers
             for (int i = 0; i < test2.Count() / 5; i++)
             {
                 var fiveItems = test2.Skip(i * 5).Take(5);
-                var salary = new Salary();
-
-
-                salary.Name = fiveItems.ElementAt(0);
-                salary.Title = fiveItems.ElementAt(1);
-                salary.Department = fiveItems.ElementAt(2);
-                salary.FTR = decimal.Parse(fiveItems.ElementAt(3), NumberStyles.Currency).ToString("#.##");
-                salary.GF = decimal.Parse(fiveItems.ElementAt(4), NumberStyles.Currency).ToString("#.##");
+                var salary = new Salary()
+                {
+                    Name = fiveItems.ElementAt(0),
+                    Title = fiveItems.ElementAt(1),
+                    Department = fiveItems.ElementAt(2),
+                    FTR = decimal.Parse(fiveItems.ElementAt(3), NumberStyles.Currency).ToString("#.##"),
+                    GF = decimal.Parse(fiveItems.ElementAt(4), NumberStyles.Currency).ToString("#.##")
+                };
+                
 
                 salaryList.Add(salary);
             }
@@ -90,9 +91,11 @@ namespace scratchpad.Controllers
         }
 
         [HttpGet]
-        public SalaryByTitle GetAvailableYear()
+        public AvailableYears GetAvailableYear()
         {
             HtmlDocument doc = new HtmlDocument();
+            List<string> keys;
+            List<string> values;
 
             using (var wc = new WebClient())
             {
@@ -102,12 +105,33 @@ namespace scratchpad.Controllers
                 var newdoc = new HtmlDocument();
                 newdoc.LoadHtml(htmlNode);
                 var statTable = newdoc.DocumentNode.Descendants("select").First().Descendants("option");
-                var list1 = statTable.Select(x => x.InnerHtml);
-                var optionValuelist = statTable.Select(x => x.OuterHtml);
-
-                return new SalaryByTitle
-                {                };
+                keys = statTable.Select(x => x.Attributes.Single(a => a.Name == "value").Value).ToList();
+                values = statTable.Select(x => x.NextSibling.InnerText.Replace("\t",string.Empty).Replace("\n", string.Empty)).ToList();
             };
+
+            return new AvailableYears(keys, values);
+        }
+
+        [HttpGet]
+        public AvailableCampus GetCampusCodes()
+        {
+            HtmlDocument doc = new HtmlDocument();
+            List<string> keys;
+            List<string> values;
+
+            using (var wc = new WebClient())
+            {
+                var result = wc.DownloadString(new Uri(baseUrl));
+                doc.LoadHtml(result);
+                var htmlNode = doc.GetElementbyId("maincontent").OuterHtml;
+                var newdoc = new HtmlDocument();
+                newdoc.LoadHtml(htmlNode);
+                var statTable = newdoc.DocumentNode.Descendants("select").Last().Descendants("option"); 
+                keys = statTable.Select(x => x.Attributes.Single(a => a.Name == "value").Value).ToList();
+                values = statTable.Select(x => x.NextSibling.InnerText.Replace("\t", string.Empty).Replace("\n", string.Empty)).ToList();
+            };
+
+            return new AvailableCampus(keys, values);
         }
     }
 }
