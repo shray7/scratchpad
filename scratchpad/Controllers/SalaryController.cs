@@ -35,8 +35,11 @@ namespace scratchpad.Controllers
             var newdoc = new HtmlDocument();
             var test1 = doc.GetElementbyId("results").OuterHtml;
             newdoc.LoadHtml(test1);
-            var test2 = newdoc.DocumentNode.Descendants("td").Where(x => !x.InnerText.Contains("google")).Select(x=>x.InnerText);
+            var test2 = newdoc.DocumentNode.Descendants("td").Where(x => !x.InnerText.Contains("google")).Select(x => x.InnerText);
             var salaryList = new List<Salary>();
+
+            var availableYears = GetAvailableYear();
+            var availableCampus = GetCampusCodes();
             for (int i = 0; i < test2.Count() / 5; i++)
             {
                 var fiveItems = test2.Skip(i * 5).Take(5);
@@ -46,9 +49,11 @@ namespace scratchpad.Controllers
                     Title = fiveItems.ElementAt(1),
                     Department = fiveItems.ElementAt(2),
                     FTR = decimal.Parse(fiveItems.ElementAt(3), NumberStyles.Currency).ToString("#.##"),
-                    GF = decimal.Parse(fiveItems.ElementAt(4), NumberStyles.Currency).ToString("#.##")
+                    GF = decimal.Parse(fiveItems.ElementAt(4), NumberStyles.Currency).ToString("#.##"),
+                    CampusCode = availableCampus.CampusMap[campus.ToString()],
+                    Year = availableYears.AvailableYearMap[year.ToString()]
                 };
-                
+
 
                 salaryList.Add(salary);
             }
@@ -79,16 +84,7 @@ namespace scratchpad.Controllers
             };
         }
 
-        [HttpGet]
-        public void test()
-        {
-            using (var db = new SalaryContext())
-            {
-                db.Delete(new Salary { SalaryId = 1 });
-                db.Delete(new Salary { SalaryId = 2 });
-                db.SaveChanges();
-            }
-        }
+
 
         [HttpGet]
         public AvailableYears GetAvailableYear()
@@ -106,7 +102,7 @@ namespace scratchpad.Controllers
                 newdoc.LoadHtml(htmlNode);
                 var statTable = newdoc.DocumentNode.Descendants("select").First().Descendants("option");
                 keys = statTable.Select(x => x.Attributes.Single(a => a.Name == "value").Value).ToList();
-                values = statTable.Select(x => x.NextSibling.InnerText.Replace("\t",string.Empty).Replace("\n", string.Empty)).ToList();
+                values = statTable.Select(x => x.NextSibling.InnerText.Replace("\t", string.Empty).Replace("\n", string.Empty)).ToList();
             };
 
             return new AvailableYears(keys, values);
@@ -126,12 +122,39 @@ namespace scratchpad.Controllers
                 var htmlNode = doc.GetElementbyId("maincontent").OuterHtml;
                 var newdoc = new HtmlDocument();
                 newdoc.LoadHtml(htmlNode);
-                var statTable = newdoc.DocumentNode.Descendants("select").Last().Descendants("option"); 
+                var statTable = newdoc.DocumentNode.Descendants("select").Last().Descendants("option");
                 keys = statTable.Select(x => x.Attributes.Single(a => a.Name == "value").Value).ToList();
                 values = statTable.Select(x => x.NextSibling.InnerText.Replace("\t", string.Empty).Replace("\n", string.Empty)).ToList();
             };
 
             return new AvailableCampus(keys, values);
+        }
+        [HttpPost]
+        public void SaveAllSalaries()
+        {
+            var availableYears = GetAvailableYear();
+            var availableCampus = GetCampusCodes();
+            availableCampus.CampusMap.Remove("0"); // Removes ALL Option, only save by Campus
+            for (char f = 'A'; f <= 'Z'; f++)
+            {
+                for (char last = 'A'; last <= 'Z'; last++)
+                {
+                    foreach (var item in availableYears.AvailableYearMap)
+                    {
+                        foreach (var thing in availableCampus.CampusMap)
+                        {
+                            var salaries = GetSalary(f.ToString(), last.ToString(),Convert.ToInt32(item.Key), Convert.ToInt32(thing.Key));
+                        }
+                    }
+                }
+            }
+            
+            using (var db = new SalaryContext())
+            {
+                db.SalarySet.Add(new Salary { Name = "Shreyas" });
+                db.SalarySet.Add(new Salary { Name = "Test Name" });
+                db.SaveChanges();
+            }
         }
     }
 }

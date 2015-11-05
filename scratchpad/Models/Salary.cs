@@ -11,5 +11,7 @@ namespace scratchpad.Models
         public string Department { get; set; }
         public string FTR { get; set; }
         public string GF { get; set; }
+        public string CampusCode { get; set; }
+        public string Year { get; set; }
     }
 }

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Web.Http;
 using WebApi.Models;
+using WebApi.Models.Context;
 
 namespace WebApi.Controllers
 {
@@ -44,8 +45,22 @@ namespace WebApi.Controllers
                     list.AddRange(departmentList);
                 }
             };
-
             return list;
+        }
+
+        [HttpPost]
+        public void SaveAllDepartments()
+        {
+            var departments = GetAllDepartments();
+            using (var db = new DepartmentContext())
+            {
+                foreach (var item in departments)
+                {
+                    var department = new Department() { DepartmentName = item };
+                    db.DepartmentSet.Add(department);
+                }
+                db.SaveChanges();
+            }
         }
     }
 }

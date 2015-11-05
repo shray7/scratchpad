@@ -1,7 +1,9 @@
 ﻿using System.Data.Entity;
+using WebApi.Configuration;
 
 namespace scratchpad.Models
 {
+    [DbConfigurationType(typeof(AzureConfiguration))]
     public class SalaryContext : DbContext
     {
         public DbSet<Salary> SalarySet { get; set; }

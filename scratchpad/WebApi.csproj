@@ -170,6 +170,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Configuration\AzureConfiguration.cs" />
     <Compile Include="Controllers\DepartmentController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\SalaryController.cs" />
@@ -178,6 +179,7 @@
     </Compile>
     <Compile Include="Models\AvailableCampus.cs" />
     <Compile Include="Models\AvailableYears.cs" />
+    <Compile Include="Models\Context\DepartmentContext.cs" />
     <Compile Include="Models\Context\SalaryByTitleContext.cs" />
     <Compile Include="Models\Department.cs" />
     <Compile Include="Models\Salary.cs" />
