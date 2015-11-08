@@ -4,10 +4,10 @@ using WebApi.Configuration;
 namespace scratchpad.Models
 {
     [DbConfigurationType(typeof(AzureConfiguration))]
-    public class SalaryContext : DbContext
+    public class SalaryInfoContext : DbContext
     {
         public DbSet<Salary> SalarySet { get; set; }
-        public SalaryContext() : base("DefaultConnection")
+        public SalaryInfoContext() : base("DefaultConnection")
         {}
 
         public virtual void Delete(Salary salary)

@@ -26,13 +26,19 @@ namespace scratchpad.Controllers
         public IEnumerable<Salary> GetSalary(string firstName, string lastName, int year, int campus)
         {
             HtmlDocument doc = new HtmlDocument();
-
-            using (var wc = new WebClient())
+            try {
+                using (var wc = new WebClient())
+                {
+                    var result = wc.DownloadString(new Uri(ConstructGetSalaryByNameUri(firstName, lastName, year, campus)));
+                    doc.LoadHtml(result);
+                };
+            }
+            catch
             {
-                var result = wc.DownloadString(new Uri(ConstructGetSalaryByNameUri(firstName, lastName, year, campus)));
-                doc.LoadHtml(result);
-            };
+                return null;
+            }
             var newdoc = new HtmlDocument();
+            if (doc.GetElementbyId("results") == null) return null;
             var test1 = doc.GetElementbyId("results").OuterHtml;
             newdoc.LoadHtml(test1);
             var test2 = newdoc.DocumentNode.Descendants("td").Where(x => !x.InnerText.Contains("google")).Select(x => x.InnerText);
@@ -143,17 +149,18 @@ namespace scratchpad.Controllers
                     {
                         foreach (var thing in availableCampus.CampusMap)
                         {
-                            var salaries = GetSalary(f.ToString(), last.ToString(),Convert.ToInt32(item.Key), Convert.ToInt32(thing.Key));
+                            var salaries = GetSalary(f.ToString(), last.ToString(), Convert.ToInt32(item.Key), Convert.ToInt32(thing.Key));
+                            if (salaries != null)
+                            {
+                                using (var db = new SalaryInfoContext())
+                                {
+                                    db.SalarySet.AddRange(salaries);
+                                    db.SaveChanges();
+                                }
+                            }
                         }
                     }
                 }
-            }
-            
-            using (var db = new SalaryContext())
-            {
-                db.SalarySet.Add(new Salary { Name = "Shreyas" });
-                db.SalarySet.Add(new Salary { Name = "Test Name" });
-                db.SaveChanges();
             }
         }
     }
