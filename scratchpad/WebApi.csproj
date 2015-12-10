@@ -182,6 +182,7 @@
     <Compile Include="Models\Context\DepartmentContext.cs" />
     <Compile Include="Models\Context\SalaryByTitleContext.cs" />
     <Compile Include="Models\Department.cs" />
+    <Compile Include="Models\Numbers.cs" />
     <Compile Include="Models\Salary.cs" />
     <Compile Include="Models\SalaryByTitle.cs" />
     <Compile Include="Models\Context\SalaryContext.cs" />

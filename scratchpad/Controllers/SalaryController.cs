@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
+using WebApi.Models;
 
 namespace scratchpad.Controllers
 {
@@ -66,6 +67,25 @@ namespace scratchpad.Controllers
             return salaryList;
         }
         [HttpGet]
+        public IEnumerable<Salary> GetSalaryFromDb(string firstName, string lastName, string year, string campus)
+        {
+            using (var db = new SalaryInfoContext())
+            {
+                //var result = (from x in db.SalarySet
+                //              where (x.Name.Split(',')[0].ToLower() = firstName.ToLower()
+                //              || x.Name.Split(',')[1].ToLower() = lastName.ToLower() )
+                //              && x.Year = year.ToString() && x.CampusCode =  campus.ToString()
+                //              select x);
+                //return result.ToList();
+                return db.SalarySet.Where(x => (x.Name.ToLower().Contains(firstName.ToLower())
+                || x.Name.ToLower().Contains(lastName.ToLower()))
+                && x.Year == year && x.CampusCode == campus)
+                .ToList();
+            }
+        }
+
+
+        [HttpGet]
         public SalaryByTitle GetSalaryByTitle(string titleSearch, int year, int campus)
         {
             HtmlDocument doc = new HtmlDocument();
@@ -77,7 +97,8 @@ namespace scratchpad.Controllers
                 var htmlNode = doc.GetElementbyId("maincontent").OuterHtml;
                 var newdoc = new HtmlDocument();
                 newdoc.LoadHtml(htmlNode);
-                var statTable = newdoc.DocumentNode.Descendants("table").Skip(1).First();
+                var statTable = newdoc.DocumentNode.Descendants("table").Skip(1).FirstOrDefault();
+                if (statTable == null) return null;
                 var statChildren = statTable.ChildNodes;
 
                 return new SalaryByTitle
@@ -87,6 +108,45 @@ namespace scratchpad.Controllers
                     MinSalary = statChildren.Descendants("td").Skip(7).First().InnerText,
                     MaxSalary = statChildren.Descendants("td").Skip(3).First().InnerText
                 };
+            };
+        }
+
+        [HttpGet]
+        public List<Numbers> GetHighestSalary(int year, int campus)
+        {
+            HtmlDocument doc = new HtmlDocument();
+
+            using (var wc = new WebClient())
+            {
+                var result = wc.DownloadString(new Uri(string.Format(@"http://www.umsalary.info/numbers.php?Year={0}&Campus={1}&RPT_PERIOD=0", year, campus)));
+                doc.LoadHtml(result);
+                var htmlNode = doc.GetElementbyId("maincontent").OuterHtml;
+                var newdoc = new HtmlDocument();
+                newdoc.LoadHtml(htmlNode);
+                var statTable = newdoc.DocumentNode.Descendants("table").Skip(1).FirstOrDefault();
+                if (statTable == null) return null;
+                var statChildren = statTable.OuterHtml;
+                newdoc.LoadHtml(statChildren);
+                var t1 = newdoc.DocumentNode.Descendants("table").FirstOrDefault();
+                if (t1 == null) return null;
+                var data = t1.OuterHtml;
+                newdoc.LoadHtml(data);
+
+                var list = new List<Numbers>();
+                for (var i=0; i<newdoc.DocumentNode.Descendants("td").Count()/4; i++)
+                {
+                    var fourItems = newdoc.DocumentNode.Descendants("td").Skip(i * 4).Take(4);
+                    var record = new Numbers
+                    {
+                        Name = fourItems.ElementAt(0).InnerText,
+                        Title = fourItems.ElementAt(1).InnerText,
+                        Department = fourItems.ElementAt(2).InnerText,
+                        Salary = fourItems.ElementAt(3).InnerText
+                    };
+                    list.Add(record);
+                }
+
+                return list;
             };
         }
 
