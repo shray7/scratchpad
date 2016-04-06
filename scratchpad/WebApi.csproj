@@ -199,7 +199,9 @@
     <Content Include="Content\Site.css" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <None Include="Properties\PublishProfiles\salaryapi - FTP %282%29.pubxml" />
     <None Include="Properties\PublishProfiles\salaryapi - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\salaryapi - Web Deploy %282%29.pubxml" />
     <None Include="Properties\PublishProfiles\salaryapi - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\salaryapi.pubxml" />
     <Content Include="salaryapi.azurewebsites.net.PublishSettings" />

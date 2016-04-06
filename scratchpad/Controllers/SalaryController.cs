@@ -83,34 +83,29 @@ namespace scratchpad.Controllers
                 foreach (var item in db.SalarySet)
                 {
                     if(item.FirstName != null)
+                    {
                         item.FirstName = item.Name.Split(',')[1];
-                    if (item.LastName!= null)
+                        db.SaveChanges();
+                    }
+                    if (item.LastName != null)
+                    {
                         item.LastName = item.Name.Split(',')[0];
-                    db.SaveChanges();
+                        db.SaveChanges();
+                    }
                 }
 
             }
             return "Ok";
         }
         [HttpGet]
-        public IEnumerable<Salary> GetSalaryFromDb(string firstName, string lastName, string year, string campus)
+        public IEnumerable<Salary> GetSalaryFromDb(string name, string year, string campus)
         {
             using (var db = new SalaryInfoContext())
             {
-                if (string.IsNullOrEmpty(firstName) && !string.IsNullOrEmpty(lastName))
-                {
-                    return db.SalarySet.Where(x => x.Name.ToLower().Contains(lastName.ToLower())
-                    && x.Year == year)
-                    .ToList();
-                }
-                else if(!string.IsNullOrEmpty(firstName) && string.IsNullOrEmpty(lastName))
-                {
-                    return db.SalarySet.Where(x => x.Name.ToLower().Contains(firstName.ToLower())
-                    && x.Year == year)
-                    .ToList();
-                }
-                var t = db.SalarySet.Where(x => (x.Name.ToLower().Contains(firstName.ToLower())
-                && x.Name.ToLower().Contains(lastName.ToLower()))
+                var names = name.Split(' ');
+
+                var t = db.SalarySet.Where(x => (x.Name.ToLower().Contains(names[0].ToLower())
+                && x.Name.ToLower().Contains(names[1].ToLower()))
                 && x.Year == year)
                 .ToList();
                 return t;
