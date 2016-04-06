@@ -7,6 +7,5 @@ namespace WebApi.Models
         [Key]
         public int DepartmentId { get; set; }
         public string DepartmentName { get; set; }
-        public string Campus { get; set; }
     }
 }

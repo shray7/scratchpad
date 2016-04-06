@@ -47,6 +47,14 @@ namespace WebApi.Controllers
             };
             return list;
         }
+        [HttpGet]
+        public IEnumerable<string> GetDepartmentsFromDb()
+        {
+            using(var db = new DepartmentContext())
+            {
+                return db.DepartmentSet.Select(x => x.DepartmentName).ToList();
+            }
+        }
 
         [HttpPost]
         public void SaveAllDepartments()

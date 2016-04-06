@@ -7,7 +7,10 @@ namespace WebApi.Models.Context
     public class DepartmentContext : DbContext
     {
         public DbSet<Department> DepartmentSet { get; set; }
-        public DepartmentContext(): base("DefaultConnection"){}
+        public DepartmentContext(): base("DefaultConnection")
+        {
+            Database.SetInitializer<DepartmentContext>(null);
+        }
 
         public virtual void Delete(Department department)
         {

@@ -3,10 +3,12 @@ using scratchpad.Models;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
 using WebApi.Models;
+using WebApi.Models.Context;
 
 namespace scratchpad.Controllers
 {
@@ -24,10 +26,12 @@ namespace scratchpad.Controllers
             return baseUrlByTitle + string.Format("Title={0}&year={1}&campus{2}", titleSearch, year, campus);
         }
         [HttpGet]
-        public IEnumerable<Salary> GetSalary(string firstName, string lastName, int year, int campus)
+        public IEnumerable<Salary> GetSalary(string firstName, string lastName, int year, int campus, StreamWriter sw)
         {
             HtmlDocument doc = new HtmlDocument();
-            try {
+
+            try
+            {
                 using (var wc = new WebClient())
                 {
                     var result = wc.DownloadString(new Uri(ConstructGetSalaryByNameUri(firstName, lastName, year, campus)));
@@ -36,10 +40,15 @@ namespace scratchpad.Controllers
             }
             catch
             {
-                return null;
+
+                sw.WriteLine(string.Concat("Couldnt find ", firstName, " ", lastName));
             }
             var newdoc = new HtmlDocument();
-            if (doc.GetElementbyId("results") == null) return null;
+            if (doc.GetElementbyId("results") == null)
+            {
+                sw.WriteLine(string.Format("Couldnt find results for {0} {1}", firstName, lastName));
+                return null;
+            }
             var test1 = doc.GetElementbyId("results").OuterHtml;
             newdoc.LoadHtml(test1);
             var test2 = newdoc.DocumentNode.Descendants("td").Where(x => !x.InnerText.Contains("google")).Select(x => x.InnerText);
@@ -57,7 +66,7 @@ namespace scratchpad.Controllers
                     Department = fiveItems.ElementAt(2),
                     FTR = decimal.Parse(fiveItems.ElementAt(3), NumberStyles.Currency).ToString("#.##"),
                     GF = decimal.Parse(fiveItems.ElementAt(4), NumberStyles.Currency).ToString("#.##"),
-                    CampusCode = availableCampus.CampusMap[campus.ToString()],
+                    //CampusCode = availableCampus.CampusMap[campus.ToString()],
                     Year = availableYears.AvailableYearMap[year.ToString()]
                 };
 
@@ -67,20 +76,44 @@ namespace scratchpad.Controllers
             return salaryList;
         }
         [HttpGet]
+        public string UpdateNames()
+        {
+            using (var db = new SalaryInfoContext())
+            {
+                foreach (var item in db.SalarySet)
+                {
+                    if(item.FirstName != null)
+                        item.FirstName = item.Name.Split(',')[1];
+                    if (item.LastName!= null)
+                        item.LastName = item.Name.Split(',')[0];
+                    db.SaveChanges();
+                }
+
+            }
+            return "Ok";
+        }
+        [HttpGet]
         public IEnumerable<Salary> GetSalaryFromDb(string firstName, string lastName, string year, string campus)
         {
             using (var db = new SalaryInfoContext())
             {
-                //var result = (from x in db.SalarySet
-                //              where (x.Name.Split(',')[0].ToLower() = firstName.ToLower()
-                //              || x.Name.Split(',')[1].ToLower() = lastName.ToLower() )
-                //              && x.Year = year.ToString() && x.CampusCode =  campus.ToString()
-                //              select x);
-                //return result.ToList();
-                return db.SalarySet.Where(x => (x.Name.ToLower().Contains(firstName.ToLower())
-                || x.Name.ToLower().Contains(lastName.ToLower()))
-                && x.Year == year && x.CampusCode == campus)
+                if (string.IsNullOrEmpty(firstName) && !string.IsNullOrEmpty(lastName))
+                {
+                    return db.SalarySet.Where(x => x.Name.ToLower().Contains(lastName.ToLower())
+                    && x.Year == year)
+                    .ToList();
+                }
+                else if(!string.IsNullOrEmpty(firstName) && string.IsNullOrEmpty(lastName))
+                {
+                    return db.SalarySet.Where(x => x.Name.ToLower().Contains(firstName.ToLower())
+                    && x.Year == year)
+                    .ToList();
+                }
+                var t = db.SalarySet.Where(x => (x.Name.ToLower().Contains(firstName.ToLower())
+                && x.Name.ToLower().Contains(lastName.ToLower()))
+                && x.Year == year)
                 .ToList();
+                return t;
             }
         }
 
@@ -133,7 +166,7 @@ namespace scratchpad.Controllers
                 newdoc.LoadHtml(data);
 
                 var list = new List<Numbers>();
-                for (var i=0; i<newdoc.DocumentNode.Descendants("td").Count()/4; i++)
+                for (var i = 0; i < newdoc.DocumentNode.Descendants("td").Count() / 4; i++)
                 {
                     var fourItems = newdoc.DocumentNode.Descendants("td").Skip(i * 4).Take(4);
                     var record = new Numbers
@@ -198,30 +231,104 @@ namespace scratchpad.Controllers
         [HttpPost]
         public void SaveAllSalaries()
         {
-            var availableYears = GetAvailableYear();
-            var availableCampus = GetCampusCodes();
-            availableCampus.CampusMap.Remove("0"); // Removes ALL Option, only save by Campus
-            for (char f = 'A'; f <= 'Z'; f++)
+            var dictionary = new Dictionary<string, string>()
             {
-                for (char last = 'A'; last <= 'Z'; last++)
+                //{ "2","2013-2014" },
+                //{ "3","2012-2013" },
+                //{ "4","2011-2012" },
+                //{ "5","2010-2011" },
+                //{ "6","2009-2010" },
+                //{ "7","2008-2009" },
+                //{ "8","2007-2008" },
+                { "9","2006-2007" },
+                { "10","2005-2006" },
+                //{ "11","2004-2005" },
+                //{ "12","2003-2004" },
+                //{ "13","2002-2003" },
+            };
+            foreach (var item in dictionary.Keys)
+            {
+                HtmlDocument doc = new HtmlDocument();
+                try
                 {
-                    foreach (var item in availableYears.AvailableYearMap)
+                    using (var wc = new WebClient())
                     {
-                        foreach (var thing in availableCampus.CampusMap)
-                        {
-                            var salaries = GetSalary(f.ToString(), last.ToString(), Convert.ToInt32(item.Key), Convert.ToInt32(thing.Key));
-                            if (salaries != null)
-                            {
-                                using (var db = new SalaryInfoContext())
-                                {
-                                    db.SalarySet.AddRange(salaries);
-                                    db.SaveChanges();
-                                }
-                            }
-                        }
-                    }
+                        var result = wc.DownloadString(new Uri("http://www.umsalary.info/deptsearch.php?Dept=%25&Year=" + item + "&Campus=0"));
+                        doc.LoadHtml(result);
+                    };
+                }
+                catch
+                {
+
+                }
+                var data = doc.GetElementbyId("maincontent").Descendants("table").Last().Descendants("td").Where(x => !x.InnerText.Contains("google")).Select(x => x.InnerText);
+                var salaryList = new List<Salary>();
+
+                var availableYears = GetAvailableYear();
+                var availableCampus = GetCampusCodes();
+
+                for (int i = 0; i < data.Count() / 5; i++)
+                {
+                    var fiveItems = data.Skip(i * 5).Take(5);
+                    var salary = new Salary()
+                    {
+                        Name = fiveItems.ElementAt(0),
+                        Title = fiveItems.ElementAt(1),
+                        Department = fiveItems.ElementAt(2),
+                        FTR = decimal.Parse(fiveItems.ElementAt(3), NumberStyles.Currency).ToString("#.##"),
+                        GF = decimal.Parse(fiveItems.ElementAt(4), NumberStyles.Currency).ToString("#.##"),
+                        //CampusCode = availableCampus.CampusMap[campus.ToString()],
+                        Year = dictionary[item]
+                    };
+
+                    salaryList.Add(salary);
+                }
+                using (var db = new AllSalariesContext())
+                {
+                    db.SalarySet.AddRange(salaryList);
+                    db.SaveChanges();
                 }
             }
+        }
+
+
+        [HttpGet]
+        public void GetSharedServicesSalary()
+        {
+            HtmlDocument doc = new HtmlDocument();
+
+            try
+            {
+                using (var wc = new WebClient())
+                {
+                    var result = wc.DownloadString(new Uri("http://www.umsalary.info/UM_Shared_Services.php"));
+                    doc.LoadHtml(result);
+                };
+            }
+            catch
+            {
+
+            }
+            var data = doc.DocumentNode.Descendants("table").Skip(1).First().Descendants("td").Where(x => !x.InnerText.Contains("google")).Where(x => !x.InnerText.Contains("\t")).Select(x => x.InnerText);
+            var salaryList = new List<Salary>();
+
+            for (int i = 0; i < data.Count() / 5; i++)
+            {
+                var fiveItems = data.Skip(i * 5).Take(5);
+                var salary = new Salary()
+                {
+                    Name = fiveItems.ElementAt(0),
+                    Title = fiveItems.ElementAt(1),
+                    Department = fiveItems.ElementAt(2),
+                    FTR = decimal.Parse(fiveItems.ElementAt(3), NumberStyles.Currency).ToString("#.##"),
+                    GF = decimal.Parse(fiveItems.ElementAt(4), NumberStyles.Currency).ToString("#.##"),
+                    //Year = availableYears.AvailableYearMap[year.ToString()]
+                };
+
+
+                salaryList.Add(salary);
+            }
+
         }
     }
 }

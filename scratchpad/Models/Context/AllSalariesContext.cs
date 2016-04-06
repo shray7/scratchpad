@@ -1,16 +1,15 @@
-﻿using System.Data.Entity;
+﻿using scratchpad.Models;
+using System.Data.Entity;
 using WebApi.Configuration;
 
-namespace scratchpad.Models
+namespace WebApi.Models.Context
 {
     [DbConfigurationType(typeof(AzureConfiguration))]
-    public class SalaryInfoContext : DbContext
+    public class AllSalariesContext : DbContext
     {
         public DbSet<Salary> SalarySet { get; set; }
-        public SalaryInfoContext() : base("DefaultConnection")
-        {
-            Database.SetInitializer<SalaryInfoContext>(null);
-        }
+        public AllSalariesContext() : base("DefaultConnection")
+        { }
 
         public virtual void Delete(Salary salary)
         {
