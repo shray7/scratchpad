@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using Newtonsoft.Json;
 using scratchpad.Models;
 using System;
 using System.Collections.Generic;
@@ -48,11 +49,11 @@ namespace WebApi.Controllers
             return list;
         }
         [HttpGet]
-        public IEnumerable<string> GetDepartmentsFromDb()
+        public Data GetDepartmentsFromDb()
         {
-            using(var db = new DepartmentContext())
+            using (var db = new DepartmentContext())
             {
-                return db.DepartmentSet.Select(x => x.DepartmentName).ToList();
+                return new Data { data = db.DepartmentSet.GroupBy(x=>x.DepartmentName).Select(x=>x.FirstOrDefault()).Select(x => new DataLevel { title = x.DepartmentName }).ToList() };
             }
         }
 
@@ -71,4 +72,14 @@ namespace WebApi.Controllers
             }
         }
     }
+
+    public class Data
+    {
+        public List<DataLevel> data { get; set; }
+    }
+    public class DataLevel
+    {
+        public string title { get; set; }
+    }
+
 }
