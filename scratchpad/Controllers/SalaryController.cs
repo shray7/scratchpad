@@ -98,20 +98,109 @@ namespace scratchpad.Controllers
             return "Ok";
         }
         [HttpGet]
-        public IEnumerable<Salary> GetSalaryFromDb(string name, string year, string campus)
+        public IEnumerable<Salary> GetSalaryFromDb(string name, string year)
         {
             using (var db = new SalaryInfoContext())
             {
                 var names = name.Split(' ');
-
-                var t = db.SalarySet.Where(x => (x.Name.ToLower().Contains(names[0].ToLower())
-                && x.Name.ToLower().Contains(names[1].ToLower()))
-                && x.Year == year)
-                .ToList();
+                var n1 = names[0];
+                if(names.Length > 1)
+                {
+                    var n2 = names[1];
+                    return db.SalarySet.Where(x => (x.Name.ToLower().Contains(n1.ToLower())
+                    && x.Name.ToLower().Contains(n2.ToLower()))
+                    && x.Year == year)
+                    .ToList();
+                }
+                var t = db.SalarySet.Where(x => x.Name.ToLower().Contains(n1.ToLower())
+                    && x.Year == year)
+                    .ToList();
                 return t;
             }
         }
+        [HttpGet]
+        public IEnumerable<Salary> GetSalaryByTitleFromDb(string title, string year)
+        {
+            using (var db = new SalaryInfoContext())
+            {
+                
+                var t = db.SalarySet.Where(x => x.Title.ToLower().Contains(title.ToLower())
+                    && x.Year == year)
+                    .ToList();
+                return t;
+            }
+        }
+        [HttpGet]
+        public IEnumerable<Salary> GetSalaryByDepartmentFromDb(string department, string year)
+        {
+            using (var db = new SalaryInfoContext())
+            {
 
+                var t = db.SalarySet.Where(x => x.Department.ToLower().Contains(department.ToLower())
+                    && x.Year == year)
+                    .ToList();
+                return t;
+            }
+        }
+        [HttpGet]
+        public IEnumerable<Salary> GetSalaryByNameAllYearsFromDb(string name)
+        {
+            using (var db = new SalaryInfoContext())
+            {
+
+                var t = db.SalarySet.Where(x => x.Name.ToLower().Contains(name.ToLower()))
+                    .ToList();
+                return t;
+            }
+        }
+        [HttpGet]
+        public IEnumerable<Salary> GetHighestSalaryFromDb(string year)
+        {
+            using (var db = new SalaryInfoContext())
+            {
+
+                var t = db.SalarySet.OrderByDescending(x=>x.FTR).Take(25)
+                    .ToList();
+                return t;
+            }
+        }
+        [HttpGet]
+        public IEnumerable<Salary> GetTopPercentSalaryFromDb(decimal percent, string year)
+        {
+            using (var db = new SalaryInfoContext())
+            {
+                var count = db.SalarySet.Count();
+                var takeNumber = Math.Floor(count * percent);
+                var t = db.SalarySet.OrderByDescending(x => x.FTR).Take(int.Parse(takeNumber.ToString()))
+                    .ToList();
+                return t;
+            }
+        }
+        [HttpGet]
+        public IEnumerable<Salary> GetLowestPercentSalaryFromDb(decimal percent, string year)
+        {
+            using (var db = new SalaryInfoContext())
+            {
+                var count = db.SalarySet.Count();
+                var takeNumber = Math.Floor(count * percent);
+                var t = db.SalarySet.OrderBy(x => x.FTR).Take(int.Parse(takeNumber.ToString()))
+                    .ToList();
+                return t;
+            }
+        }
+        [HttpGet]
+        public IEnumerable<Salary> GetPercentBetweenSalaryFromDb(decimal bottomPercent, decimal topPercent, string year)
+        {
+            using (var db = new SalaryInfoContext())
+            {
+                var count = db.SalarySet.Count();
+                var takeNumberBottom = Math.Floor(count * bottomPercent);
+                var takeNumberMid = count - Math.Floor(count * bottomPercent);
+                var t = db.SalarySet.OrderBy(x => x.FTR).Skip(int.Parse(takeNumberBottom.ToString())).Take(int.Parse(takeNumberMid.ToString()))
+                    .ToList();
+                return t;
+            }
+        }
 
         [HttpGet]
         public SalaryByTitle GetSalaryByTitle(string titleSearch, int year, int campus)
