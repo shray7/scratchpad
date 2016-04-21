@@ -82,7 +82,7 @@ namespace scratchpad.Controllers
             {
                 foreach (var item in db.SalarySet)
                 {
-                    if(item.FirstName != null)
+                    if (item.FirstName != null)
                     {
                         item.FirstName = item.Name.Split(',')[1];
                         db.SaveChanges();
@@ -104,7 +104,7 @@ namespace scratchpad.Controllers
             {
                 var names = name.Split(' ');
                 var n1 = names[0];
-                if(names.Length > 1)
+                if (names.Length > 1)
                 {
                     var n2 = names[1];
                     return db.SalarySet.Where(x => (x.Name.ToLower().Contains(n1.ToLower())
@@ -123,7 +123,7 @@ namespace scratchpad.Controllers
         {
             using (var db = new SalaryInfoContext())
             {
-                
+
                 var t = db.SalarySet.Where(x => x.Title.ToLower().Contains(title.ToLower())
                     && x.Year == year)
                     .ToList();
@@ -147,8 +147,7 @@ namespace scratchpad.Controllers
         {
             using (var db = new SalaryInfoContext())
             {
-
-                var t = db.SalarySet.Where(x => x.Name.ToLower().Contains(name.ToLower()))
+                var t = db.SalarySet.Where(x => x.Name.ToLower().Equals(name.ToLower()))
                     .ToList();
                 return t;
             }
@@ -159,7 +158,7 @@ namespace scratchpad.Controllers
             using (var db = new SalaryInfoContext())
             {
 
-                var t = db.SalarySet.OrderByDescending(x=>x.FTR).Take(25)
+                var t = db.SalarySet.Where(x => x.Year == year).OrderByDescending(x => x.FTR).Take(25)
                     .ToList();
                 return t;
             }
